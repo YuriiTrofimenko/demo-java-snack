@@ -8,4 +8,5 @@ import java.util.List;
 public interface CategoryHibernateDAO extends JpaRepository<Category, Long> {
     List<Category> findAllByAvailableTrueOrderByNumberDesc ();
     List<Category> findAllByNumberEquals (Integer number);
+    Category findCategoryByName( String name);
 }

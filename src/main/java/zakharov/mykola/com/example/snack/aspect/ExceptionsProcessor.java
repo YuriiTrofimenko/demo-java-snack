@@ -32,7 +32,7 @@ public class ExceptionsProcessor {
         try {
             output = pjp.proceed();
         } catch (ConstraintViolationException ex) {
-            System.out.println("my service error");
+            // System.out.println("my service error");
             output =
                     ResponseModel.builder()
                             .status(ResponseModel.FAIL_STATUS)

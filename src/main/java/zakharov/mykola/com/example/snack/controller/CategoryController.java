@@ -23,10 +23,12 @@ public class CategoryController {
     }
 
     //edit current, add items for sale
-    @PatchMapping(value = "/{id}")
-    public ResponseEntity<ResponseModel> addItem(@PathVariable Long id, @RequestBody CategoryModel category) {
-        category.setId(id);
-        return new ResponseEntity<>(categoryService.addItem(category), HttpStatus.OK);
+    @PatchMapping(value = "/{category}/add/{number}")
+    public ResponseEntity<ResponseModel> addItem(
+        @PathVariable String category,
+        @PathVariable Integer number
+    ) {
+        return new ResponseEntity<>(categoryService.addItem(category, number), HttpStatus.OK);
     }
 
     // show all categories available for sale sorted by amount
@@ -36,7 +38,7 @@ public class CategoryController {
     }
 
     // show all categories available for sale sorted by amount
-    @GetMapping("/clear")
+    @DeleteMapping("/clear")
     public ResponseEntity<ResponseModel> clear() {
         return new ResponseEntity<>(categoryService.clear(), HttpStatus.OK);
     }

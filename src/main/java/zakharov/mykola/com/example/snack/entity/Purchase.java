@@ -2,6 +2,8 @@ package zakharov.mykola.com.example.snack.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -16,6 +18,7 @@ import java.time.LocalDate;
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@DynamicInsert
 public class Purchase {
 
     @Id
@@ -23,13 +26,14 @@ public class Purchase {
     private Long id;
 
     @NotNull
-    @NotBlank(message = "Date is mandatory")
-    @JsonFormat(pattern="yyyy-MM-dd")
-    @Column(name="date", nullable = false, columnDefinition = "DATE")
+    // @NotBlank(message = "Date is mandatory")
+    // @JsonFormat(pattern="yyyy-MM-dd")
+    @Column(name="date", columnDefinition = "TIMESTAMP")
+    // @CreationTimestamp
     private LocalDate date;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "category_id", nullable=false)
     private Category category;
 
 }

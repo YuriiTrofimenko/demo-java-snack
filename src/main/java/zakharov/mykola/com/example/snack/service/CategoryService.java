@@ -21,13 +21,13 @@ public class CategoryService {
     }
 
     // create new
-    public ResponseModel addCategory(@Valid CategoryModel categoryModel) {
+    public ResponseModel addCategory(CategoryModel categoryModel) {
         Category category =
                 Category.builder()
                         .name(categoryModel.getName().trim())
                         .price(categoryModel.getPrice())
-                        .number(categoryModel.getNumber())
-                        .available(categoryModel.getAvailable())
+                        .number(categoryModel.getNumber() != null ? categoryModel.getNumber() : 0)
+                        // .available(categoryModel.getAvailable())
                         .build();
         categoryDao.save(category);
         return ResponseModel.builder()
@@ -38,27 +38,33 @@ public class CategoryService {
     }
 
     //edit current, add items for sale
-    public ResponseModel addItem(@Valid CategoryModel categoryModel) {
-        if (categoryDao.findById(categoryModel.getId()).isEmpty()) {
+    public ResponseModel addItem(String categoryName, Integer number) {
+        Category category = categoryDao.findCategoryByName(categoryName);
+        if (category != null) {
+            category.setNumber(category.getNumber() + number);
+            categoryDao.save(category);
             return ResponseModel.builder()
-                    .status(ResponseModel.FAIL_STATUS)
-                    .message(String.format("Item %s Is Not Added For Sale", categoryModel.getName()))
-                    .build();
+                .status(ResponseModel.SUCCESS_STATUS)
+                .message(String.format("%s %.2f %d", category.getName(), category.getPrice(), category.getNumber()))
+                .build();
+        } else {
+            return ResponseModel.builder()
+                .status(ResponseModel.FAIL_STATUS)
+                .message(
+                    String.format(
+                        "Category %s not found",
+                        categoryName
+                    )
+                ).build();
         }
-        Category category =
+        /* Category category =
                 Category.builder()
                         .id(categoryModel.getId())
                         .name(categoryModel.getName())
                         .price(categoryModel.getPrice())
                         .number(categoryDao.findById(categoryModel.getId()).get().getNumber() + categoryModel.getNumber())
                         .available(categoryModel.getAvailable())
-                        .build();
-        categoryDao.save(category);
-        return ResponseModel.builder()
-                .status(ResponseModel.SUCCESS_STATUS)
-                //.message(String.format("Item %s Added For Sale", category.getName()))
-                .message(String.format("%s %f %d", category.getName(), category.getPrice(), category.getNumber()))
-                .build();
+                        .build(); */
     }
 
     // show all categories available for sale sorted by amount
