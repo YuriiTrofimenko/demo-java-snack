@@ -7,10 +7,11 @@ import zakharov.mykola.com.example.snack.dao.PurchaseHibernateDAO;
 import zakharov.mykola.com.example.snack.entity.Category;
 import zakharov.mykola.com.example.snack.entity.Purchase;
 import zakharov.mykola.com.example.snack.model.CategoryModel;
+import zakharov.mykola.com.example.snack.model.ReportItemModel;
+import zakharov.mykola.com.example.snack.model.ReportModel;
 import zakharov.mykola.com.example.snack.model.ResponseModel;
 
 import javax.transaction.Transactional;
-import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -135,30 +136,9 @@ public class PurchaseService {
 
     // report by day
     public ResponseModel reportByDay(LocalDate date) {
-        List<Purchase> purchases = purchaseDao.findAllByDateAfterOrderByCategoryAsc(date);
-        List<CategoryModel> categoryModels =
-            purchases.stream()
-                .map(purchase ->
-                    CategoryModel.builder()
-                        .name(purchase.getCategory().getName())
-                        .price(purchase.getCategory().getPrice())
-                        .number(purchase.getCategory().getNumber())
-                        .build()
-                )
-                .collect(Collectors.toList());
-        List<BigDecimal> listOfPrices =
-                purchases.stream()
-                .map(purchase -> purchase.getCategory().getPrice())
-                .collect(Collectors.toList());
-        double total = 0.00;
-        for (BigDecimal number: listOfPrices) {
-            total += number.doubleValue();
-        }
-        return ResponseModel.builder()
-            .status(ResponseModel.SUCCESS_STATUS)
-            .data(categoryModels)
-            .message(String.format(">Total %s", total))
-            .build();
+        List<Purchase> purchases =
+            purchaseDao.findAllByDateAfterOrderByCategoryAsc(date.minusDays(1));
+        return makeReport(purchases);
     }
 
     // report by month
@@ -168,43 +148,38 @@ public class PurchaseService {
                 Integer.parseInt(yearMonth.split("-")[0]),
                 Integer.parseInt(yearMonth.split("-")[1])
             );
-        System.out.println(purchases.size());
-        Map<Purchase, Integer> purchaseStatsMap = new HashMap<>();
+        return makeReport(purchases);
+    }
+
+    private ResponseModel makeReport(List<Purchase> purchases) {
+        Map<String, ReportItemModel> purchaseStatsMap = new HashMap<>();
         purchases.forEach(purchase -> {
-            if (purchaseStatsMap.containsKey(purchase)) {
-                purchaseStatsMap.put(purchase, purchaseStatsMap.get(purchase) + 1);
+            Category category = purchase.getCategory();
+            String name = category.getName();
+            if (purchaseStatsMap.containsKey(name)) {
+                ReportItemModel item = purchaseStatsMap.get(name);
+                item.quantity++;
+                item.totalPrice = item.totalPrice.add(item.totalPrice);
+                purchaseStatsMap.put(name, item);
             } else {
-                purchaseStatsMap.put(purchase, 1);
+                purchaseStatsMap.put(
+                    name,
+                    ReportItemModel.builder()
+                        .categoryName(name)
+                        .totalPrice(category.getPrice())
+                        .quantity(1)
+                        .build()
+                );
             }
         });
-
-        /* List<Purchase> purchasesSortedByCategoryName =
-            purchases.stream()
-                .sorted(Comparator.comparing(purchase -> purchase.getCategory().getName()))
-                .collect(Collectors.toList());
-        List<CategoryModel> categoryModels =
-                purchasesSortedByCategoryName.stream()
-                .map(purchase ->
-                    CategoryModel.builder()
-                        .name(purchase.getCategory().getName())
-                        .price(purchase.getCategory().getPrice())
-                        .number(purchase.getCategory().getNumber())
-                        .build()
-                    )
-                    .collect(Collectors.toList());
-        List<BigDecimal> listOfPrices =
-                purchases.stream()
-                        .map(purchase -> purchase.getCategory().getPrice())
-                        .collect(Collectors.toList());*/
-        double total = 0.00;
-        for (Map.Entry<Purchase, Integer> purchaseEntry: purchaseStatsMap.entrySet()) {
-            total += purchaseEntry.getKey().getCategory().getNumber() * purchaseEntry.getValue();
+        BigDecimal total = new BigDecimal(0);
+        for (ReportItemModel item: purchaseStatsMap.values()) {
+            total = total.add(item.totalPrice);// * item.quantity;
         }
         return ResponseModel.builder()
             .status(ResponseModel.SUCCESS_STATUS)
-            .message(String.format(">Total %s", total))
+            .message(ReportModel.builder().items(purchaseStatsMap.values()).totalSum(total).build().toString())
             .data(purchaseStatsMap)
             .build();
     }
-
 }

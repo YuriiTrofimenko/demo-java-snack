@@ -5,6 +5,7 @@ import zakharov.mykola.com.example.snack.dao.CategoryHibernateDAO;
 import zakharov.mykola.com.example.snack.entity.Category;
 import zakharov.mykola.com.example.snack.model.CategoryModel;
 import zakharov.mykola.com.example.snack.model.ResponseModel;
+import zakharov.mykola.com.example.snack.service.interfaces.ICategoryService;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
@@ -13,11 +14,21 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class CategoryService {
+public class CategoryService implements ICategoryService {
 
     private final CategoryHibernateDAO categoryDao;
     public CategoryService (CategoryHibernateDAO categoryDao) {
         this.categoryDao = categoryDao;
+    }
+
+    private static CategoryModel categoryEntityToModel(Category category) {
+        return CategoryModel.builder()
+            .id(category.getId())
+            .name(category.getName())
+            .price(category.getPrice())
+            .number(category.getNumber())
+            .available(category.getAvailable())
+            .build();
     }
 
     // create new
@@ -114,5 +125,4 @@ public class CategoryService {
                 .data(categoryModels)
                 .build();
     }
-
 }

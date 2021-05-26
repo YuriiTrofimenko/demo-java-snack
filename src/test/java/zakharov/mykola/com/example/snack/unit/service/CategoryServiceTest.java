@@ -86,30 +86,23 @@ public class CategoryServiceTest {
     @Test
     void shouldReturnGetAllList() {
         doReturn(returnListOfCategories()
-        ).when(categoryServiceMock)
+        ).when(categoryDAO)
             .findAllByAvailableTrueOrderByNumberDesc();
-        List<Category> categoriesAvailableTrue =
-            categoryServiceMock.findAllByAvailableTrueOrderByNumberDesc();
-        ResponseModel responseModel =
-            ResponseModel.builder()
-                .data(categoryListToCategoryModelList(categoriesAvailableTrue))
-                .build();
+        ResponseModel responseModel = categoryService.list();
         assertNotNull(responseModel);
         assertNotNull(responseModel.getData());
         assertEquals(((List)responseModel.getData()).size(), 3);
     }
 
-    // TODO
-    /* @Test
+    @Test
     void shouldClearSuccessfully() {
         doReturn(returnListOfCategoriesWithZeroAmount()
         ).when(categoryDAO)
-                .findAllByNumberEquals(0);
-        List<Category> categoriesAllWithNumberZero =
-                categoryServiceMock.findAllByNumberEquals((short) 0);
+            .findAllByNumberEquals(0);
+            categoryService.clear();
         verify(categoryDAO, atLeast(1))
             .findAllByNumberEquals(0);
-    } */
+    }
 
     CategoryModel returnCategoryModelWithoutId () {
         return CategoryModel.builder()

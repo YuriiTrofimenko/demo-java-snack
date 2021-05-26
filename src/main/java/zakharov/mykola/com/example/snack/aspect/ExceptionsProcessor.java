@@ -39,6 +39,7 @@ public class ExceptionsProcessor {
                             .message((ex.getMessage() != null ? ex.getMessage() : "Constraint violation"))
                             .build();
         } catch (Exception ex) {
+            ex.printStackTrace();
             output =
                     ResponseModel.builder()
                             .status(ResponseModel.FAIL_STATUS)

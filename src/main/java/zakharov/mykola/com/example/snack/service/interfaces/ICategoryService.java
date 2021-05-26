@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface ICategoryService {
     ResponseModel addCategory (CategoryModel categoryModel);
-    ResponseModel addItem (CategoryModel categoryModel);
+    ResponseModel addItem (String categoryName, Integer number);
     ResponseModel list();
     ResponseModel clear();
-    List<Category> findAllByAvailableTrueOrderByNumberDesc();
-    List<Category> findAllByNumberEquals(Short amount);
+    // List<Category> findAllByAvailableTrueOrderByNumberDesc();
+    // List<Category> findAllByNumberEquals(Short amount);
 }

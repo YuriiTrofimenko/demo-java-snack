@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 
 @Data
 @EqualsAndHashCode()
-@ToString()
+// @ToString()
 @Builder(toBuilder = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -20,4 +20,9 @@ public class CategoryModel {
     private BigDecimal price;
     private Integer number;
     private Boolean available;
+
+    @Override
+    public String toString() {
+        return name + " " + price + " " + number;
+    }
 }
