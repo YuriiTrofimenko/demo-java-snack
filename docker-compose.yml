@@ -1,0 +1,32 @@
+version: "3"
+services:
+  esnack-mysql:
+    container_name: esnack-mysql
+    image: mysql:5.7
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - ${MYSQL_EXTERNAL_PORT}:3306
+    environment:
+      MYSQL_DATABASE: esnack
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./volumes/database:/var/lib/mysql
+    networks:
+      - esnack_spring_net
+  esnack-backend:
+    container_name: esnack-backend
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ~/.m2:/root/.m2
+    ports:
+      - ${BACKEND_EXTERNAL_PORT}:8080
+    depends_on:
+      - esnack-mysql
+    command: ["./wait-for-it.sh", "esnack-mysql:${MYSQL_EXTERNAL_PORT}", "--", "mvn", "spring-boot:run", "-Dspring-boot.run.profiles=docker", "-X"]
+    networks:
+      - esnack_spring_net
+networks:
+  esnack_spring_net:
+    driver: bridge
